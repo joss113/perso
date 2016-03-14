@@ -25,7 +25,7 @@ function send_email_with_attachment($destination,$subject,$body,$file=null){
     $mail->isHTML(true);                  
     $mail->Subject = $subject;
     $mail->Body    = $body;
-    if(!$mail->send()){syslog(LOG_ERR, "Email Error!");}else{syslog(LOG_NOTICE, "Email Send!");} // Ajout du status dans syslog
+    if(!$mail->send()){syslog(LOG_ERR, "$_SERVER['PHP_SELF']: Email Error!");}else{syslog(LOG_NOTICE, "$_SERVER['PHP_SELF']: Email Send!");} // Ajout du status dans syslog
 }
 
 /* Fonction de connexion & d'éxécution SQL */
@@ -36,7 +36,7 @@ function sql_request($request,$database){
    mysql_select_db($database,$db);
    // SQL Exécution de la requête
    if (empty($request)) { 
-	   	syslog(LOG_ERR, "No Data in SQL Request. script abort");
+	   	syslog(LOG_ERR, "$_SERVER['PHP_SELF']: No Data in SQL Request. script abort");
 	   	die("No SQL Data");
    }
    $tab_data_sql = mysql_query($request);
@@ -303,6 +303,8 @@ $whereSQL=null 		// Permet de redéfinir la requete SQL après la partie WHERE
 			echo "*********************\n";
 			echo "\nSuccès, email envoyé!\n";
 			echo "*********************\n\n";
+			/* Log du résulat */
+			syslog(LOG_NOTICE, "$_SERVER['PHP_SELF']: Fonction exécuté, email envoyé");
 			exit(0);
 		}
 	}else{
@@ -311,13 +313,10 @@ $whereSQL=null 		// Permet de redéfinir la requete SQL après la partie WHERE
 		echo "*************************************\n\n";
 		exit(0);
 	}
-	
-
-/* Log du résulat */
-syslog(LOG_NOTICE, "Fonction exécuté, email envoyé");
 
 ERROR:
-syslog(LOG_ERR, "Erreur dans la fonction!");
+syslog(LOG_ERR, "$_SERVER['PHP_SELF']: Erreur dans la fonction!");
+exit(-1);
 }
 
 /***********************************
