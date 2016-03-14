@@ -12,18 +12,14 @@
 ****************************/
 
 /* Fonction de préparation & d'envoi de l'email */
-function send_email_with_attachment($from,$destination,$subject,$body,$file=null){
-    // Function Working: send_email_with_attachment(MAIL SRC, MAIL DEST, SUBJECT, MAIL BODY, OPTIONAL ATTACHMENT FILE);
+function send_email_with_attachment($destination,$subject,$body,$file=null){
+    // Utilisation de PHPMAILER pour l'envoi des mails en SMTP
     require 'mail/PHPMailerAutoload.php'; // user phpmailer to send emails
     $mail = new PHPMailer;
     $mail->isSMTP();                                  
     $mail->Host = '172.16.101.19'; 
-    $mail->SMTPAuth = true;        
-    $mail->Username = 'EMAIL LOGIN';
-    $mail->Password = 'EMAIL PASSWORD';
-    $mail->SMTPSecure = 'tls';         
-    $mail->Port = 587;
-    $mail->setFrom($from);
+    $mail->SMTPAuth = false;        
+    $mail->setFrom("asterisk-server@roullier.com");
     $mail->addAddress($destination);
     if (!isset($file)) {$mail->addAttachment($file);} // Si un fichier est présent
     $mail->isHTML(true);                  
@@ -191,7 +187,8 @@ function create_csv_file($rows=false, $filename=false, $headings=false)
         @header('Content-Type: text/csv; charset=utf-8');
         @header('Content-Disposition: attachment; filename=' . $name);
         # Start the ouput
-        $output = fopen("rapport/".$name, 'w+');
+        if (DEBUG == true) { $output = fopen("php://output", 'w');}
+        else{$output = fopen("rapport/".$name, 'w+');}
         ftruncate($output,0);
         # Create the headers
         $tableau_menu = array(
@@ -275,12 +272,13 @@ $whereSQL=null 		// Permet de redéfinir la requete SQL après la partie WHERE
 	if($tableSQL==null){$tableSQL="cdr";}
 	if ($whereSQL != null) { $sql = "SELECT $arguments_rqt_sql FROM $tableSQL WHERE $whereSQL";}
 	else{
+		if (DEBUG == true) { $limit = "LIMIT 0,10";}else{$limit = "";}
 		$sql = "SELECT $arguments_rqt_sql
 				FROM $tableSQL
 				WHERE calldate LIKE(\"".$year."-".$digitMonth."-%\")
 				AND 
 				(src LIKE \"$monextension\" OR dst LIKE \"$monextension\")
-				ORDER BY calldate DESC;";
+				ORDER BY calldate DESC $limit;";
 	}
 	// function sql_request: (arg1: request, arg2: database)
 	$tab_data_sql = sql_request($sql,$databaseSQL);
@@ -293,11 +291,21 @@ $whereSQL=null 		// Permet de redéfinir la requete SQL après la partie WHERE
 	$return_csv = create_csv_file($tab_result,$titre_mail_csv,',');
 
 /* Préparation & envoi du mail */
-	$from = "asterisk.server@roullier.com"; 
 	$body = "Mail automatique:\n\n\nMois: ".$previous_month."\n\n\n".$contenu_mail;
 	$file = $return_csv;
 	$subject_email = $titre_mail_csv;
-	send_email_with_attachment($from,$destination_mail,$subject_email,$body,$file);
+	if (DEBUG == false) {
+		if(!send_email_with_attachment($destination_mail,$subject_email,$body,$file)) goto ERROR;
+	}else{
+		echo "\nSuccès, fin de la fonction!\n";
+	}
+	
+
+/* Log du résulat */
+syslog(LOG_NOTICE, "Fonction exécuté, email envoyé");
+
+ERROR:
+syslog(LOG_ERR, "Erreur dans la fonction!");
 }
 
 /***********************************
@@ -318,6 +326,8 @@ $whereSQL=null 		// Permet de redéfinir la requete SQL après la partie WHERE
 *
 *	(*) Paramètres obligatoires
 */
+/* Variable pour tester la fonction limité à 10 résultats sql & sans générer le mail */
+define("DEBUG", true);
 
 /* ACCUEIL CFPR DINARD */
 
