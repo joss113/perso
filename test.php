@@ -298,9 +298,18 @@ $whereSQL=null 		// Permet de redéfinir la requete SQL après la partie WHERE
 	$file = $return_csv;
 	$subject_email = $titre_mail_csv;
 	if (DEBUG == false) {
-		if(!send_email_with_attachment($destination_mail,$subject_email,$body,$file)) goto ERROR;
+		if(!send_email_with_attachment($destination_mail,$subject_email,$body,$file)){ goto ERROR;}
+		else{
+			echo "*********************\n";
+			echo "\nSuccès, email envoyé!\n";
+			echo "*********************\n\n";
+			exit(0);
+		}
 	}else{
-		echo "\nSuccès, fin de la fonction!\n";
+		echo "*************************************\n";
+		echo "\nSuccès, fin de la fonction DEBUG!\n";
+		echo "*************************************\n\n";
+		exit(0);
 	}
 	
 
