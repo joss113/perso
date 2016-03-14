@@ -125,7 +125,10 @@ function traitement_sql($tab,$tabFilter,$extension){
 	                $tempTab[$v] = $value['src'];
 	            }
 	            if (strlen($tempTab[$v]) == 9) {
-	            	 $tempTab[$v] = "0". $tempTab[$v];
+	            	 $tempTab[$v] = "0".$tempTab[$v];
+	            }
+	            if (empty($tempTab[$v])) {
+	            	$tempTab[$v] = "N/A";
 	            }
        		}
        		// Sinon je conserve la valeur
@@ -157,15 +160,10 @@ function traitement_sql($tab,$tabFilter,$extension){
        					}
        				}
        			}
-       			else{
-       				if (!empty($value[$v])) {
-       					$tempTab[$v] = $value[$v];
-       				}else{
-       					if (empty($tempTab["NUMERO"])) {
-       						$tempTab[$v] = "N/A";
-       					}
-       				}
+       			elseif (!empty($value[$v])) {
+       				$tempTab[$v] = $value[$v];
        			}
+       			else{$tempTab[$v] = "N/A";}
        		}
     	}
     	// J'enregistre les données de cette ligne / Je cumule les lignes
