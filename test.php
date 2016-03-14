@@ -188,8 +188,10 @@ function create_csv_file($rows=false, $filename=false, $headings=false)
         @header('Content-Disposition: attachment; filename=' . $name);
         # Start the ouput
         if (DEBUG == true) { $output = fopen("php://output", 'w');}
-        else{$output = fopen("rapport/".$name, 'w+');}
-        ftruncate($output,0);
+        else{
+        	$output = fopen("rapport/".$name, 'w+');
+        	ftruncate($output,0);
+    	}
         # Create the headers
         $tableau_menu = array(
         	'0' => "TYPE D'APPEL", 
@@ -208,7 +210,8 @@ function create_csv_file($rows=false, $filename=false, $headings=false)
             fputcsv($output, $row);
         }
         # Exit to close the stream off
-        exit();
+        //exit();
+        return $name;
     }
     # Default to a failure
     return false;
